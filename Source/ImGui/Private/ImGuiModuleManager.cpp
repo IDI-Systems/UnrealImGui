@@ -10,6 +10,9 @@
 
 #include <imgui.h>
 
+#if NETIMGUI_ENABLED
+#include "NetImgui_Api.h"
+#endif
 
 // High enough z-order guarantees that ImGui output is rendered on top of the game UI.
 constexpr int32 IMGUI_WIDGET_Z_ORDER = 10000;
@@ -81,21 +84,38 @@ void FImGuiModuleManager::RebuildFontAtlas()
 
 void FImGuiModuleManager::LoadTextures()
 {
-	checkf(FSlateApplication::IsInitialized(), TEXT("Slate should be initialized before we can create textures."));
-
-	if (!bTexturesLoaded)
+	checkf(FSlateApplication::IsInitialized() || IsRunningDedicatedServer(), TEXT("Slate should be initialized before we can create textures."));
+	
+if (!bTexturesLoaded)
 	{
-		bTexturesLoaded = true;
+		if (FSlateApplication::IsInitialized())
+		{
+			bTexturesLoaded = true;
+			TextureManager.InitializeErrorTexture(FColor::Magenta);
 
-		TextureManager.InitializeErrorTexture(FColor::Magenta);
+			// Create an empty texture at index 0. We will use it for ImGui outputs with null texture id.
+			TextureManager.CreatePlainTexture(PlainTextureName, 2, 2, FColor::White);
 
-		// Create an empty texture at index 0. We will use it for ImGui outputs with null texture id.
-		TextureManager.CreatePlainTexture(PlainTextureName, 2, 2, FColor::White);
+			// Register for atlas built events, so we can rebuild textures.
+			ContextManager.OnFontAtlasBuilt.AddRaw(this, &FImGuiModuleManager::BuildFontAtlasTexture);
 
-		// Register for atlas built events, so we can rebuild textures.
-		ContextManager.OnFontAtlasBuilt.AddRaw(this, &FImGuiModuleManager::BuildFontAtlasTexture);
+			BuildFontAtlasTexture();
+		}
+		else if (IsRunningDedicatedServer())
+		{
+#if NETIMGUI_ENABLED
+			// On dedicated server we cannot use slate so manually build the font and create the texture for NetImgui
+			bTexturesLoaded = true;
+			ImGuiIO& Io = ImGui::GetIO();
+			Io.Fonts->AddFontDefault();
+			Io.Fonts->Build();
 
-		BuildFontAtlasTexture();
+			unsigned char* Pixels;
+			int Width, Height, Bpp;
+			Io.Fonts->GetTexDataAsAlpha8(&Pixels, &Width, &Height, &Bpp);
+			NetImgui::SendDataTexture(0, Pixels, Width, Height, NetImgui::eTexFormat::kTexFmtA8);
+#endif //NETIMGUI_ENABLED
+		}
 	}
 }
 
@@ -194,9 +214,6 @@ void FImGuiModuleManager::AddWidgetToViewport(UGameViewportClient* GameViewport)
 	int32 ContextIndex;
 	auto& ContextProxy = ContextManager.GetWorldContextProxy(*GameViewport->GetWorld(), ContextIndex);
 
-	// Make sure that textures are loaded before the first Slate widget is created.
-	LoadTextures();
-
 	// Create and initialize the widget.
 	TSharedPtr<SImGuiLayout> SharedWidget;
 	SAssignNew(SharedWidget, SImGuiLayout).ModuleManager(this).GameViewport(GameViewport).ContextIndex(ContextIndex);
@@ -236,5 +253,7 @@ void FImGuiModuleManager::AddWidgetsToActiveViewports()
 
 void FImGuiModuleManager::OnContextProxyCreated(int32 ContextIndex, FImGuiContextProxy& ContextProxy)
 {
+	// Make sure that textures are loaded before the first Proxy Context is created.
+	LoadTextures();
 	ContextProxy.OnDraw().AddLambda([this, ContextIndex]() { ImGuiDemo.DrawControls(ContextIndex); });
 }

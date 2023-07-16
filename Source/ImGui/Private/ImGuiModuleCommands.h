@@ -47,4 +47,7 @@ private:
 	FAutoConsoleCommand ToggleMouseInputSharingCommand;
 	FAutoConsoleCommand SetMouseInputSharingCommand;
 	FAutoConsoleCommand ToggleDemoCommand;
+#if NETIMGUI_ENABLED
+	// Create command to Connect/Disconnect ? Can edit FImGuiContextManager::UpdateNetImgui() to support this feature
+#endif
 };

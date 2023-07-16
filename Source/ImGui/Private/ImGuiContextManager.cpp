@@ -3,13 +3,19 @@
 #include "ImGuiContextManager.h"
 
 #include "ImGuiDelegatesContainer.h"
-#include "ImGuiImplementation.h"
+#include "ThirdPartyBuildNetImgui.h"
 #include "ImGuiModuleSettings.h"
 #include "ImGuiModule.h"
 #include "Utilities/WorldContext.h"
 #include "Utilities/WorldContextIndex.h"
 
 #include <imgui.h>
+
+#include "Fonts/Roboto_Medium.cpp"
+#include "Fonts/Cousine_Regular.cpp"
+#include "Fonts/Droid_Sans.cpp"
+#include "Fonts/Karla_Regular.cpp"
+#include "Fonts/Proggy_Tiny.cpp"
 
 // MSVC warnings
 #ifdef _MSC_VER
@@ -89,6 +95,8 @@ FImGuiContextManager::~FImGuiContextManager()
 
 void FImGuiContextManager::Tick(float DeltaSeconds)
 {
+	NetImguiUpdate(Contexts);
+
 	// In editor, worlds can get invalid. We could remove corresponding entries, but that would mean resetting ImGui
 	// context every time when PIE session is restarted. Instead we freeze contexts until their worlds are re-created.
 
@@ -150,7 +158,7 @@ void FImGuiContextManager::OnWorldPostActorTick(UWorld* World, ELevelTick TickTy
 #endif // ENGINE_COMPATIBILITY_WITH_WORLD_POST_ACTOR_TICK
 
 #if WITH_EDITOR
-FImGuiContextManager::FContextData& FImGuiContextManager::GetEditorContextData()
+FContextData& FImGuiContextManager::GetEditorContextData()
 {
 	FContextData* Data = Contexts.Find(Utilities::EDITOR_CONTEXT_INDEX);
 
@@ -165,7 +173,7 @@ FImGuiContextManager::FContextData& FImGuiContextManager::GetEditorContextData()
 #endif // WITH_EDITOR
 
 #if !WITH_EDITOR
-FImGuiContextManager::FContextData& FImGuiContextManager::GetStandaloneWorldContextData()
+FContextData& FImGuiContextManager::GetStandaloneWorldContextData()
 {
 	FContextData* Data = Contexts.Find(Utilities::STANDALONE_GAME_CONTEXT_INDEX);
 
@@ -179,7 +187,7 @@ FImGuiContextManager::FContextData& FImGuiContextManager::GetStandaloneWorldCont
 }
 #endif // !WITH_EDITOR
 
-FImGuiContextManager::FContextData& FImGuiContextManager::GetWorldContextData(const UWorld& World, int32* OutIndex)
+FContextData& FImGuiContextManager::GetWorldContextData(const UWorld& World, int32* OutIndex)
 {
 	using namespace Utilities;
 
@@ -263,9 +271,23 @@ void FImGuiContextManager::BuildFontAtlas(const TMap<FName, TSharedPtr<ImFontCon
 {
 	if (!FontAtlas.IsBuilt())
 	{
+		//---------------------------------------------------------------------------------------------
+		// Load our Font (Must be loaded in same order as FImguiModule::eFont enum)
 		ImFontConfig FontConfig = {};
 		FontConfig.SizePixels = FMath::RoundFromZero(13.f * DPIScale);
 		FontAtlas.AddFontDefault(&FontConfig);
+		FPlatformString::Strcpy(FontConfig.Name, sizeof(FontConfig.Name), "Roboto Medium, 16px");
+		FontAtlas.AddFontFromMemoryCompressedTTF(Roboto_Medium_compressed_data,		Roboto_Medium_compressed_size,		16.0f*DPIScale, &FontConfig);
+		FPlatformString::Strcpy(FontConfig.Name, sizeof(FontConfig.Name), "Cousine Regular, 15px");
+		FontAtlas.AddFontFromMemoryCompressedTTF(Cousine_Regular_compressed_data,	Cousine_Regular_compressed_size,	15.0f*DPIScale, &FontConfig);
+		FPlatformString::Strcpy(FontConfig.Name, sizeof(FontConfig.Name), "Karla Regular, 16px");
+		FontAtlas.AddFontFromMemoryCompressedTTF(Karla_Regular_compressed_data,		Karla_Regular_compressed_size,		16.0f*DPIScale, &FontConfig);
+		FPlatformString::Strcpy(FontConfig.Name, sizeof(FontConfig.Name), "Droid Sans, 16px");
+		FontAtlas.AddFontFromMemoryCompressedTTF(Droid_Sans_compressed_data,		Droid_Sans_compressed_size,			16.0f*DPIScale, &FontConfig);
+		FPlatformString::Strcpy(FontConfig.Name, sizeof(FontConfig.Name), "Proggy Tiny, 10px");
+		FontAtlas.AddFontFromMemoryCompressedTTF(Proggy_Tiny_compressed_data,		Proggy_Tiny_compressed_size,		10.0f*DPIScale, &FontConfig);
+
+		// ... add extra fonts here (and add extra entry in 'FImguiModule::eFont' enum)
 
 		// Build custom fonts
 		for (const TPair<FName, TSharedPtr<ImFontConfig>>& CustomFontPair : CustomFontConfigs)

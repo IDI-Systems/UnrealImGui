@@ -3,7 +3,7 @@
 #include "ImGuiContextProxy.h"
 
 #include "ImGuiDelegatesContainer.h"
-#include "ImGuiImplementation.h"
+#include "ThirdPartyBuildNetImgui.h"
 #include "ImGuiInteroperability.h"
 #include "Utilities/Arrays.h"
 #include "VersionCompatibility.h"
@@ -152,12 +152,20 @@ void FImGuiContextProxy::DrawEarlyDebug()
 	if (bIsFrameStarted && !bIsDrawEarlyDebugCalled)
 	{
 		bIsDrawEarlyDebugCalled = true;
+		if( NetImGuiCanDrawProxy(this) )
+		{			
+			SetAsCurrent();
+			
+			// Delegates called in order specified in FImGuiDelegates.
+			BroadcastMultiContextEarlyDebug();
+			BroadcastWorldEarlyDebug();
+		}
 
-		SetAsCurrent();
-
-		// Delegates called in order specified in FImGuiDelegates.
-		BroadcastMultiContextEarlyDebug();
-		BroadcastWorldEarlyDebug();
+		if( NetImGuiSetupDrawRemote(this) )
+		{
+			BroadcastMultiContextEarlyDebug();
+			BroadcastWorldEarlyDebug();
+		}
 	}
 }
 
@@ -170,22 +178,29 @@ void FImGuiContextProxy::DrawDebug()
 		// Make sure that early debug is always called first to guarantee order specified in FImGuiDelegates.
 		DrawEarlyDebug();
 
-		SetAsCurrent();
+		if (NetImGuiCanDrawProxy(this))
+		{			
+			SetAsCurrent();
 
-		// Delegates called in order specified in FImGuiDelegates.
-		BroadcastWorldDebug();
-		BroadcastMultiContextDebug();
+			// Delegates called in order specified in FImGuiDelegates.
+			BroadcastWorldDebug();
+			BroadcastMultiContextDebug();
+		}
+
+		if (NetImGuiSetupDrawRemote(this))
+		{
+			BroadcastWorldDebug();
+			BroadcastMultiContextDebug();
+		}
 	}
 }
 
 void FImGuiContextProxy::Tick(float DeltaSeconds)
 {
 	// Making sure that we tick only once per frame.
-	if (LastFrameNumber < GFrameNumber)
+	if (LastFrameNumber < GFrameCounter)
 	{
-		LastFrameNumber = GFrameNumber;
-
-		SetAsCurrent();
+		LastFrameNumber = GFrameCounter;
 
 		if (bIsFrameStarted)
 		{
@@ -214,16 +229,17 @@ void FImGuiContextProxy::BeginFrame(float DeltaTime)
 {
 	if (!bIsFrameStarted)
 	{
-		ImGuiIO& IO = ImGui::GetIO();
-		IO.DeltaTime = DeltaTime;
+		if( NetImGuiCanDrawProxy(this) )
+		{
+			SetAsCurrent();
+			ImGuiIO& IO	= ImGui::GetIO();
+			IO.DeltaTime	= DeltaTime;
+			IO.DisplaySize	= { (float)DisplaySize.X, (float)DisplaySize.Y };
+			ImGuiInterops::CopyInput(IO, InputState);
+			ImGui::NewFrame();
+		}
 
-		ImGuiInterops::CopyInput(IO, InputState);
 		InputState.ClearUpdateState();
-
-		IO.DisplaySize = { (float)DisplaySize.X, (float)DisplaySize.Y };
-
-		ImGui::NewFrame();
-
 		bIsFrameStarted = true;
 		bIsDrawEarlyDebugCalled = false;
 		bIsDrawDebugCalled = false;
@@ -234,15 +250,30 @@ void FImGuiContextProxy::EndFrame()
 {
 	if (bIsFrameStarted)
 	{
-		// Prepare draw data (after this call we cannot draw to this context until we start a new frame).
-		ImGui::Render();
+		if ( NetImGuiCanDrawProxy(this) )
+		{
+			// Prepare draw data (after this call we cannot draw to this context until we start a new frame).
+			SetAsCurrent();
+			ImGui::Render();
 
-		// Update our draw data, so we can use them later during Slate rendering while ImGui is in the middle of the
-		// next frame.
-		UpdateDrawData(ImGui::GetDrawData());
-
+			// Update our draw data, so we can use them later during Slate rendering while ImGui is in the middle of the
+			// next frame.
+			UpdateDrawData(ImGui::GetDrawData());
+		}
 		bIsFrameStarted = false;
 	}
+}
+
+// Is this context the current ImGui context.
+bool FImGuiContextProxy::IsCurrentContext() const
+{
+	return ImGui::GetCurrentContext() == Context;
+}
+
+// Set this context as current ImGui context.
+void FImGuiContextProxy::SetAsCurrent()
+{
+	ImGui::SetCurrentContext(Context);
 }
 
 void FImGuiContextProxy::UpdateDrawData(ImDrawData* DrawData)

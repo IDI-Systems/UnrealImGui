@@ -9,6 +9,7 @@ Dear ImGui is an immediate-mode graphical user interface library that is very li
 Status
 ------
 - [ImGui `v1.89.7`](https://github.com/ocornut/imgui/releases/tag/v1.89.7)
+- [NetImgui `v1.9`](https://github.com/sammyfreg/netImgui/releases/tag/v1.9.0)
 - [ImPlot `v0.14+cc5e1daa`](https://github.com/epezent/implot/tree/cc5e1daa5c7f2335a9460ae79c829011dc5cef2d)
 
 Supported Unreal Engine version: `4.26`, `5.0`, `5.1`, `5.2`
@@ -20,8 +21,6 @@ Fork Information
 Please note that this is a forked project from [segross/UnrealImGui](https://github.com/segross/UnrealImGui) with contributions from [benui-dev/UnrealImGui](https://github.com/benui-dev/UnrealImGui) and [WiggleWizard/UnrealImGui](https://github.com/WiggleWizard/UnrealImGui). We do not take credit for the work they put into making Dear ImGui work in Unreal Engine. The work done by this fork is listed below.
 
 Large portions of this `README.md` have been removed to keep redundant information between the base project and this fork to a minimum. If you wish to read the original `README.md`, please see [UnrealImGui `README.md`](https://github.com/segross/UnrealImGui/blob/master/README.md).
-
-Also note that the NetImGui branch is not up to date with any of this fork's changes.
 
 - Updated core source files for **Unreal Engine 5** while maintaining **Unreal Engine 4** compatibility.
 - Updated Dear ImGui to `v1.89.7`.
@@ -104,6 +103,12 @@ void Init()
     SceneCaptureComponent2D->CaptureSource = ESceneCaptureSource::SCS_FinalToneCurveHDR;
 }
 ```
+How to Set up NetImgui
+----------------------
+
+To remotely connect to your application's Imgui content using NetImgui, you need to run the **NetImgui Server application**. The appropriate version can be downloaded [here]("https://raw.githubusercontent.com/wiki/sammyfreg/netImgui/UnrealImgui/NetImguiServer_1_9.zip") and see the source project's [documentation](https://github.com/sammyfreg/netImgui) for instructions on its usage.
+
+Once you establish connection, you can use acces the 'NetImgui' entry in the 'Main Menu' top bar to switch between contexts and modes. In standalone game it should be one context and in the editor one editor context, plus one for each PIE instance. Please, note that all those features are experimental and might evolve. Any input is welcomed.
 
 ### Troubleshooting
 If you're using a scene capture and your quad is not drawing at all, make sure your scene capture "Capture Source" is set to "Final Color (with tone curve) in Linear sRGB gamut" to avoid alpha being set to 0 (since there's no way to instruct ImGui to ignore alpha without modding the core UnrealImGui plugin).
@@ -178,6 +183,7 @@ See also
  - [Forked Project by WiggleWizard](https://github.com/WiggleWizard/UnrealImGui)
  - [Dear ImGui](https://github.com/ocornut/imgui)
  - [ImPlot](https://github.com/epezent/implot)
+ - [NetImgui](https://github.com/sammyfreg/netImgui)
 
 
 License
