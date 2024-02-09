@@ -67,8 +67,8 @@ public class ImGui : ModuleRules
 				"Engine",
 				"InputCore",
 				"Slate",
-				"SlateCore"
-				// ... add private dependencies that you statically link with here ...
+				"SlateCore",
+				"EnhancedInput",
 			}
 			);
 

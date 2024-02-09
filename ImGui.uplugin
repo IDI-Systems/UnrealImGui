@@ -18,6 +18,12 @@
 			"Name": "ImGui",
 			"Type": "Runtime",
 			"LoadingPhase": "PreDefault"
+		},
+	],
+	"Plugins": [
+		{
+			"Name": "EnhancedInput",
+			"Enabled": true
 		}
 	]
 }
