@@ -4,9 +4,12 @@
 
 #include "ImGuiModuleSettings.h"
 
+#if (ENGINE_MAJOR_VERSION == 4 && ENGINE_MINOR_VERSION >= 27) || ENGINE_MAJOR_VERSION >= 5
+		#include "GameFramework/InputSettings.h"
+#endif
+
 #include <GameFramework/PlayerInput.h>
 #include <UObject/UObjectIterator.h>
-
 
 namespace
 {
@@ -86,7 +89,12 @@ namespace DebugExecBindings
 		const FKeyBind KeyBind = CreateKeyBind(KeyInfo, Command);
 
 		// Update default player input, so changes will be visible in all PIE sessions created after this point.
+#if (ENGINE_MAJOR_VERSION == 4 && ENGINE_MINOR_VERSION >= 27) || ENGINE_MAJOR_VERSION >= 5
+		const UInputSettings* InputSettings = GetDefault<UInputSettings>();
+		if (UPlayerInput* DefaultPlayerInput = GetMutableDefault<UPlayerInput>(InputSettings->GetDefaultPlayerInputClass()))
+#else
 		if (UPlayerInput* DefaultPlayerInput = GetMutableDefault<UPlayerInput>())
+#endif
 		{
 			UpdatePlayerInput(DefaultPlayerInput, KeyBind);
 		}
