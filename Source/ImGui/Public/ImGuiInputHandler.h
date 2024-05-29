@@ -134,15 +134,12 @@ public:
 
 protected:
 
-	/** Copy state of modifier keys to input state. */
-	void CopyModifierKeys(const FInputEvent& InputEvent);
-
 	/**
 	 * Checks whether this is a key event that can open console.
 	 * @param KeyEvent - Key event to test.
 	 * @returns True, if this key event can open console.
 	 */
-	bool IsConsoleEvent(const FKeyEvent& KeyEvent) const;
+	static bool IsConsoleEvent(const FKeyEvent& KeyEvent);
 
 #if WITH_EDITOR
 	/**
