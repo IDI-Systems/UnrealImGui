@@ -84,6 +84,18 @@ FImGuiTextureHandle FImGuiModule::FindTextureHandle(const FName& Name)
 	return (Index != INDEX_NONE) ? FImGuiTextureHandle{ Name, ImGuiInterops::ToImTextureID(Index) } : FImGuiTextureHandle{};
 }
 
+UTexture* FImGuiModule::FindTexture(const FName& Name)
+{
+	const TextureIndex Index = ImGuiModuleManager->GetTextureManager().FindTextureIndex(Name);
+	return (Index != INDEX_NONE) ? ImGuiModuleManager->GetTextureManager().GetTextureObject(Index) : nullptr;
+}
+
+UTexture* FImGuiModule::FindTexture(const FImGuiTextureHandle& Handle)
+{
+	const TextureIndex Index = ImGuiInterops::ToTextureIndex(Handle.GetTextureId());
+	return (Index != INDEX_NONE) ? ImGuiModuleManager->GetTextureManager().GetTextureObject(Index) : nullptr;
+}
+
 FImGuiTextureHandle FImGuiModule::RegisterTexture(const FName& Name, class UTexture* Texture, bool bMakeUnique)
 {
 	FTextureManager& TextureManager = ImGuiModuleManager->GetTextureManager();

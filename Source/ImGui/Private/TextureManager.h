@@ -62,6 +62,16 @@ public:
 		return IsValidTexture(Index) ? TextureResources[Index].GetResourceHandle() : ErrorTexture.GetResourceHandle();
 	}
 
+	// Get the texture object to a texture at given index. If index is out of range or resources are not valid
+	// it returns nullptr.
+	// @param Index - Index of a texture
+	// @returns The texture object for a texture at given index or nullptr, if no valid resources were
+	// found at given index
+	UTexture* GetTextureObject(TextureIndex Index) const
+	{
+		return IsValidTexture(Index) ? TextureResources[Index].GetTexture() : nullptr;
+	}
+
 	// Create a texture from raw data.
 	// @param Name - The texture name
 	// @param Width - The texture width
@@ -139,6 +149,7 @@ private:
 
 		const FName& GetName() const { return Name; }
 		const FSlateResourceHandle& GetResourceHandle() const;
+		UTexture* GetTexture() const { return Cast<UTexture>(Brush.GetResourceObject()); }
 
 	private:
 

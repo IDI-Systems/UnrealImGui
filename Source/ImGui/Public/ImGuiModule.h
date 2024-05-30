@@ -94,6 +94,22 @@ public:
 	virtual FImGuiTextureHandle FindTextureHandle(const FName& Name);
 
 	/**
+	 * If it exists, get a texture object with given resource name.
+	 *
+	 * @param Name - Resource name of a texture to find
+	 * @returns The texture object, or nullptr if not found
+	 */
+	virtual UTexture* FindTexture(const FName& Name);
+
+	/**
+	 * If it exists, get a texture object with given texture handle.
+	 *
+	 * @param Name - Resource name of a texture to find
+	 * @returns The texture object, or nullptr if not found
+	 */
+	virtual UTexture* FindTexture(const FImGuiTextureHandle& Handle);
+
+	/**
 	 * Register texture and create its Slate resources. If texture with that name already exists then it may be updated
 	 * or if bMakeUnique is true, exception will be thrown. Throws exception, if name argument is NAME_None or texture
 	 * is null.
