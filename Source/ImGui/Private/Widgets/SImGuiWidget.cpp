@@ -112,7 +112,7 @@ void SImGuiWidget::Construct(const FArguments& InArgs)
 	// Initialize state.
 	UpdateVisibility();
 	UpdateMouseCursor();
-	
+
 	// Support Slate Global Invalidation.
 	ForceVolatile(true);
 
@@ -658,7 +658,7 @@ int32 SImGuiWidget::OnPaint(const FPaintArgs& Args, const FGeometry& AllottedGeo
 			{
 				const auto& DrawCommand = DrawList.GetCommand(CommandNb, ImGuiToScreen);
 
-				DrawList.CopyIndexData(IndexBuffer, DrawCommand.IndexOffset, DrawCommand.NumElements);
+				DrawList.CopyIndexData(IndexBuffer, IndexBufferOffset, DrawCommand.NumElements, DrawCommand.VertexOffset);
 
 				// Get texture resource handle for this draw command (null index will be also mapped to a valid texture).
 				const FSlateResourceHandle& Handle = ModuleManager->GetTextureManager().GetTextureHandle(DrawCommand.TextureId);

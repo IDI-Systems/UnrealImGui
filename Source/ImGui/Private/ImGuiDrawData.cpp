@@ -41,7 +41,7 @@ void FImGuiDrawList::CopyVertexData(TArray<FSlateVertex>& OutVertexBuffer, const
 	}
 }
 
-void FImGuiDrawList::CopyIndexData(TArray<SlateIndex>& OutIndexBuffer, const int32 StartIndex, const int32 NumElements) const
+void FImGuiDrawList::CopyIndexData(TArray<SlateIndex>& OutIndexBuffer, const int32 StartIndex, const int32 NumElements, const int32 VertexOffset) const
 {
 	// Reset buffer.
 	OutIndexBuffer.SetNumUninitialized(NumElements, false);
@@ -50,7 +50,7 @@ void FImGuiDrawList::CopyIndexData(TArray<SlateIndex>& OutIndexBuffer, const int
 	// have different size on different platforms).
 	for (int i = 0; i < NumElements; i++)
 	{
-		OutIndexBuffer[i] = ImGuiIndexBuffer[StartIndex + i];
+		OutIndexBuffer[i] = ImGuiIndexBuffer[StartIndex + i] + VertexOffset;
 	}
 }
 

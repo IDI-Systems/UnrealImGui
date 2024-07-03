@@ -14,9 +14,9 @@
 struct FImGuiDrawCommand
 {
 	uint32 NumElements;
-	uint32 IndexOffset;
 	FSlateRect ClippingRect;
 	TextureIndex TextureId;
+	uint32 VertexOffset;
 };
 
 // Wraps raw ImGui draw list data in utilities that transform them for Slate.
@@ -34,8 +34,8 @@ public:
 	FImGuiDrawCommand GetCommand(int CommandNb, const FTransform2D& Transform) const
 	{
 		const ImDrawCmd& ImGuiCommand = ImGuiCommandBuffer[CommandNb];
-		return { ImGuiCommand.ElemCount, ImGuiCommand.IdxOffset, TransformRect(Transform, ImGuiInterops::ToSlateRect(ImGuiCommand.ClipRect)),
-			ImGuiInterops::ToTextureIndex(ImGuiCommand.TextureId) };
+		return { ImGuiCommand.ElemCount, TransformRect(Transform, ImGuiInterops::ToSlateRect(ImGuiCommand.ClipRect)),
+			ImGuiInterops::ToTextureIndex(ImGuiCommand.TextureId), ImGuiCommand.VtxOffset };
 	}
 
 #if ENGINE_COMPATIBILITY_LEGACY_CLIPPING_API
@@ -56,7 +56,7 @@ public:
 	// @param OutIndexBuffer - Destination buffer
 	// @param StartIndex - Start copying source data starting from this index
 	// @param NumElements - How many elements we want to copy
-	void CopyIndexData(TArray<SlateIndex>& OutIndexBuffer, const int32 StartIndex, const int32 NumElements) const;
+	void CopyIndexData(TArray<SlateIndex>& OutIndexBuffer, const int32 StartIndex, const int32 NumElements, const int32 VertexOffset) const;
 
 	// Transfers data from ImGui source list to this object. Leaves source cleared.
 	void TransferDrawData(ImDrawList& Src);
