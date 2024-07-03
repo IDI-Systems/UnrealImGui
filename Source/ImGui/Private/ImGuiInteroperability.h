@@ -9,44 +9,29 @@
 
 #include <imgui.h>
 
+// If TCHAR is wider than ImWchar, enable or disable validation of input character before conversions.
+#define VALIDATE_INPUT_CHARACTERS 1
 
-class FImGuiInputState;
+#if VALIDATE_INPUT_CHARACTERS
+DEFINE_LOG_CATEGORY_STATIC(LogImGuiInput, Warning, All);
+#endif
 
 // Utilities to help standardise operations between Unreal and ImGui.
 namespace ImGuiInterops
 {
 	//====================================================================================================
-	// ImGui Types
-	//====================================================================================================
-
-	namespace ImGuiTypes
-	{
-		using FMouseButtonsArray = decltype(ImGuiIO::MouseDown);
-		using FKeysArray = decltype(ImGuiIO::KeysDown);
-		using FNavInputArray = decltype(ImGuiIO::NavInputs);
-
-		using FKeyMap = decltype(ImGuiIO::KeyMap);
-	}
-
-
-	//====================================================================================================
 	// Input Mapping
 	//====================================================================================================
 
-	// Set in ImGui IO mapping to recognize indices generated from Unreal input events.
-	void SetUnrealKeyMap(ImGuiIO& IO);
-
-	// Map FKey to index in keys buffer.
-	uint32 GetKeyIndex(const FKey& Key);
-
-	// Map key event to index in keys buffer.
-	uint32 GetKeyIndex(const FKeyEvent& KeyEvent);
+	// Map Unreal FKey to ImGuiKey
+	void SetUnrealKeyMap();
+	ImGuiKey UnrealToImGuiKey(const FKey& Key);
 
 	// Map mouse FKey to index in mouse buttons buffer.
-	uint32 GetMouseIndex(const FKey& MouseButton);
+	int GetMouseIndex(const FKey& MouseButton);
 
 	// Map pointer event to index in mouse buttons buffer.
-	FORCEINLINE uint32 GetMouseIndex(const FPointerEvent& MouseEvent)
+	FORCEINLINE int GetMouseIndex(const FPointerEvent& MouseEvent)
 	{
 		return GetMouseIndex(MouseEvent.GetEffectingButton());
 	}
@@ -54,27 +39,49 @@ namespace ImGuiInterops
 	// Convert from ImGuiMouseCursor type to EMouseCursor.
 	EMouseCursor::Type ToSlateMouseCursor(ImGuiMouseCursor MouseCursor);
 
-	// Set in the target array navigation input corresponding to gamepad key.
-	// @param NavInputs - Target array
-	// @param Key - Gamepad key mapped to navigation input (non-mapped keys will be ignored)
-	// @param bIsDown - True, if key is down 
-	void SetGamepadNavigationKey(ImGuiTypes::FNavInputArray& NavInputs, const FKey& Key, bool bIsDown);
-
 	// Set in the target array navigation input corresponding to gamepad axis.
 	// @param NavInputs - Target array
 	// @param Key - Gamepad axis key mapped to navigation input (non-axis or non-mapped inputs will be ignored)
 	// @param Value - Axis value (-1..1 values from Unreal are mapped to separate ImGui axes with values in range 0..1)
-	void SetGamepadNavigationAxis(ImGuiTypes::FNavInputArray& NavInputs, const FKey& Key, float Value);
+	void SetGamepadNavigationAxis(ImGuiIO& IO, const FKey& Key, float Value);
 
 
 	//====================================================================================================
-	// Input State Copying
+	// Character conversion
 	//====================================================================================================
 
-	// Copy input to ImGui IO.
-	// @param IO - Target ImGui IO
-	// @param InputState - Input state to copy
-	void CopyInput(ImGuiIO& IO, const FImGuiInputState& InputState);
+	template<typename T, std::enable_if_t<(sizeof(T) <= sizeof(ImWchar)), T>* = nullptr>
+	ImWchar CastInputChar(T Char)
+	{
+		return static_cast<ImWchar>(Char);
+	}
+
+	template<typename T, std::enable_if_t<!(sizeof(T) <= sizeof(ImWchar)), T>* = nullptr>
+	ImWchar CastInputChar(T Char)
+	{
+#if VALIDATE_INPUT_CHARACTERS
+		// We only need a runtime validation if TCHAR is wider than ImWchar.
+		// Signed and unsigned integral types with the same size as ImWchar should be safely converted. As long as the
+		// char value is in that range we can safely use it, otherwise we should log an error to notify about possible
+		// truncations.
+		static constexpr auto MinLimit = (std::numeric_limits<std::make_signed_t<ImWchar>>::min)();
+		static constexpr auto MaxLimit = (std::numeric_limits<std::make_unsigned_t<ImWchar>>::max)();
+		UE_CLOG(!(Char >= MinLimit && Char <= MaxLimit), LogImGuiInput, Error,
+			TEXT("TCHAR value '%c' (%#x) is out of range %d (%#x) to %u (%#x) that can be safely converted to ImWchar. ")
+			TEXT("If you wish to disable this validation, please set VALIDATE_INPUT_CHARACTERS in ImGuiInputState.cpp to 0."),
+			Char, Char, MinLimit, MinLimit, MaxLimit, MaxLimit);
+#endif
+		return static_cast<ImWchar>(Char);
+	}
+
+	//====================================================================================================
+	// Input Flags
+	//====================================================================================================
+
+	template<typename TFlags, typename TFlag>
+	static constexpr void SetFlag(TFlags& Flags, TFlag Flag, bool bSet)	{
+		Flags = bSet ? Flags | Flag : Flags & ~Flag;
+	}
 
 
 	//====================================================================================================
