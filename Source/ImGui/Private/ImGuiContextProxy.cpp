@@ -259,7 +259,7 @@ void FImGuiContextProxy::UpdateDrawData(ImDrawData* DrawData)
 {
 	if (DrawData && DrawData->CmdListsCount > 0)
 	{
-		DrawLists.SetNum(DrawData->CmdListsCount, false);
+		DrawLists.SetNum(DrawData->CmdListsCount, EAllowShrinking::No);
 
 		for (int Index = 0; Index < DrawData->CmdListsCount; Index++)
 		{
