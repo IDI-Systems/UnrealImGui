@@ -260,7 +260,7 @@ void FImGuiContextProxy::UpdateDrawData(ImDrawData* DrawData)
 	if (DrawData && DrawData->CmdListsCount > 0)
 	{
 		// Setting Allow Shrinking via bool bAllowShrinking is deprecated in engines 5.5 and higher
-		#if  ((ENGINE_MAJOR_VERSION > 4) && (ENGINE_MINOR_VERSION > 4))
+		#if FROM_ENGINE_VERSION(5,5)
 			DrawLists.SetNum(DrawData->CmdListsCount, EAllowShrinking::No);
 		#else
 			DrawLists.SetNum(DrawData->CmdListsCount, false);

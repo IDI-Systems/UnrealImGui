@@ -44,7 +44,7 @@ void FImGuiDrawList::CopyVertexData(TArray<FSlateVertex>& OutVertexBuffer, const
 void FImGuiDrawList::CopyIndexData(TArray<SlateIndex>& OutIndexBuffer, const int32 StartIndex, const int32 NumElements) const
 {
 	// Setting Allow Shrinking via bool bAllowShrinking is deprecated in engines 5.5 and higher
-	#if ((ENGINE_MAJOR_VERSION > 4) && (ENGINE_MINOR_VERSION > 4))
+	#if FROM_ENGINE_VERSION(5,5)
 		// Reset buffer.
 		OutIndexBuffer.SetNumUninitialized(NumElements, EAllowShrinking::No);
 	#else
