@@ -911,6 +911,8 @@ ImPlotTime MkGmtTime(struct tm *ptm) {
     ImPlotTime t;
 #ifdef _WIN32
     t.S = _mkgmtime(ptm);
+#elif PLATFORM_PS5
+    t.S = 0;
 #else
     t.S = timegm(ptm);
 #endif
@@ -926,6 +928,8 @@ tm* GetGmtTime(const ImPlotTime& t, tm* ptm)
     return ptm;
   else
     return nullptr;
+#elif PLATFORM_PS5
+  return nullptr;
 #else
   return gmtime_r(&t.S, ptm);
 #endif
@@ -945,6 +949,8 @@ tm* GetLocTime(const ImPlotTime& t, tm* ptm) {
     return ptm;
   else
     return nullptr;
+#elif PLATFORM_PS5
+  return nullptr;
 #else
     return localtime_r(&t.S, ptm);
 #endif

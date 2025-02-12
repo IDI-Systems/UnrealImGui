@@ -15069,6 +15069,10 @@ static void Platform_SetClipboardTextFn_DefaultImpl(ImGuiContext* ctx, const cha
 #if defined(_WIN32) && defined(IMGUI_DISABLE_WIN32_FUNCTIONS)
 #define IMGUI_DISABLE_DEFAULT_SHELL_FUNCTIONS
 #endif
+
+#if PLATFORM_PS5
+#define IMGUI_DISABLE_DEFAULT_SHELL_FUNCTIONS
+#endif
 #endif
 
 #ifndef IMGUI_DISABLE_DEFAULT_SHELL_FUNCTIONS
