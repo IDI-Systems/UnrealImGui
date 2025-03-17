@@ -6,7 +6,12 @@
 #include <Framework/Application/SlateApplication.h>
 
 #include <algorithm>
+#include "Misc/EngineVersionComparison.h"
+#if UE_VERSION_OLDER_THAN(5, 2, 0)
+#include "RHI.h"
+#else
 #include "RHITypes.h"
+#endif
 
 
 void FTextureManager::InitializeErrorTexture(const FColor& Color)
