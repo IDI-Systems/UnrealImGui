@@ -35,7 +35,7 @@ public:
 	{
 		const ImDrawCmd& ImGuiCommand = ImGuiCommandBuffer[CommandNb];
 		return { ImGuiCommand.ElemCount, ImGuiCommand.IdxOffset, TransformRect(Transform, ImGuiInterops::ToSlateRect(ImGuiCommand.ClipRect)),
-			ImGuiInterops::ToTextureIndex(ImGuiCommand.TextureId) };
+			ImGuiInterops::ToTextureIndex(ImGuiCommand.TexRef) };
 	}
 
 #if ENGINE_COMPATIBILITY_LEGACY_CLIPPING_API

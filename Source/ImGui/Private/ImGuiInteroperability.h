@@ -109,15 +109,15 @@ namespace ImGuiInterops
 		return FVector2D{ ImGuiVector.x, ImGuiVector.y };
 	}
 
-	// Convert from ImGui Texture Id to Texture Index that we use for texture resources.
-	FORCEINLINE TextureIndex ToTextureIndex(ImTextureID Index)
+	// Convert from ImGui Texture Ref to Texture Index that we use for texture resources.
+	FORCEINLINE TextureIndex ToTextureIndex(ImTextureRef TexRef)
 	{
-		return static_cast<TextureIndex>(static_cast<intptr_t>(Index));
+		return static_cast<TextureIndex>(static_cast<intptr_t>(TexRef.GetTexID()));
 	}
 
-	// Convert from Texture Index to ImGui Texture Id that we pass to ImGui.
-	FORCEINLINE ImTextureID ToImTextureID(TextureIndex Index)
+	// Convert from Texture Index to ImGui Texture Ref that we pass to ImGui.
+	FORCEINLINE ImTextureRef ToImTextureRef(TextureIndex Index)
 	{
-		return static_cast<ImTextureID>(static_cast<intptr_t>(Index));
+		return ImTextureRef(static_cast<ImTextureID>(static_cast<intptr_t>(Index)));
 	}
 }

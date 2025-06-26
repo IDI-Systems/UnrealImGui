@@ -9,7 +9,7 @@
 
 /**
  * Handle to texture resources registered in module instance. Returned after successful texture registration.
- * Can be implicitly converted to ImTextureID making it possible to use it directly with ImGui interface.
+ * Can be implicitly converted to ImTextureRef making it possible to use it directly with ImGui interface.
  * Once texture is not needed handle can be used to release resources.
  */
 class IMGUI_API FImGuiTextureHandle
@@ -23,7 +23,7 @@ public:
 	 * Checks whether this handle is null. Can be used as a quick test whether it points to any resources but it does
 	 * not check whether those resources are valid (see @ IsValid).
 	 *
-	 * @returns True, if this handle is null (Name is NAME_None and TextureId is invalid) and false otherwise.
+	 * @returns True, if this handle is null (Name is NAME_None and TextureRef is invalid) and false otherwise.
 	 */
 	bool IsNull() const { return Name == NAME_None; }
 
@@ -38,26 +38,26 @@ public:
 	/** Get the name of the texture resources (NAME_None if handle is null). */
 	const FName& GetName() const { return Name; }
 
-	/** Get the ImGui texture id for this texture (invalid if handle is null). */
-	ImTextureID GetTextureId() const { return TextureId; }
+	/** Get the ImGui texture reference for this texture (invalid if handle is null). */
+	ImTextureRef GetTextureRef() const { return TextureRef; }
 
-	/** Implicit conversion to ImTextureID. */
-	operator ImTextureID() const { return GetTextureId(); }
+	/** Implicit conversion to ImTextureRef. */
+	operator ImTextureRef() const { return GetTextureRef(); }
 
 private:
 
 	/**
-	 * Creates a texture handle with known name and texture id.
+	 * Creates a texture handle with known name and texture ref.
 	 * @param InName - Name of the texture
-	 * @param InTextureId - ImGui id of texture
+	 * @param InTextureRef - ImGui reference of texture
 	 */
-	FImGuiTextureHandle(const FName& InName, ImTextureID InTextureId);
+	FImGuiTextureHandle(const FName& InName, ImTextureRef InTextureRef);
 
-	/** Checks if texture manager has entry that matches this name and texture id index. */
+	/** Checks if texture manager has entry that matches this name and texture ref index. */
 	bool HasValidEntry() const;
 
 	FName Name;
-	ImTextureID TextureId;
+	ImTextureRef TextureRef;
 
 	// Give module class a private access, so it can create valid handles.
 	friend class FImGuiModule;
