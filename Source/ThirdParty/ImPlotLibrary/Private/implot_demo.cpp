@@ -33,6 +33,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
+#include <limits>
 
 #ifdef _MSC_VER
 #define sprintf sprintf_s
@@ -346,10 +347,13 @@ void Demo_FilledLinePlots() {
         ImPlot::SetupAxes("Days","Price");
         ImPlot::SetupAxesLimits(0,100,0,500);
         if (show_fills) {
+			constexpr double neg_infinity = -std::numeric_limits<double>::infinity();
+			constexpr double pos_infinity = std::numeric_limits<double>::infinity();
+			
             ImPlot::PushStyleVar(ImPlotStyleVar_FillAlpha, 0.25f);
-            ImPlot::PlotShaded("Stock 1", xs1, ys1, 101, shade_mode == 0 ? -INFINITY : shade_mode == 1 ? INFINITY : fill_ref, flags);
-            ImPlot::PlotShaded("Stock 2", xs1, ys2, 101, shade_mode == 0 ? -INFINITY : shade_mode == 1 ? INFINITY : fill_ref, flags);
-            ImPlot::PlotShaded("Stock 3", xs1, ys3, 101, shade_mode == 0 ? -INFINITY : shade_mode == 1 ? INFINITY : fill_ref, flags);
+			ImPlot::PlotShaded("Stock 1", xs1, ys1, 101, shade_mode == 0 ? neg_infinity : shade_mode == 1 ? pos_infinity : fill_ref, flags);
+			ImPlot::PlotShaded("Stock 2", xs1, ys2, 101, shade_mode == 0 ? neg_infinity : shade_mode == 1 ? pos_infinity : fill_ref, flags);
+			ImPlot::PlotShaded("Stock 3", xs1, ys3, 101, shade_mode == 0 ? neg_infinity : shade_mode == 1 ? pos_infinity : fill_ref, flags);
             ImPlot::PopStyleVar();
         }
         if (show_lines) {
